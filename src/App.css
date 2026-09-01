@@ -1,0 +1,309 @@
+/* src/App.css
+ * [Phase 1] 최소한의 가독성 레이아웃만. 본격적인 비주얼 디자인은
+ * MVP(Phase 4) 완성 이후 별도 스타일링 단계에서 다듬을 예정 (가이드라인 8절 참고).
+ */
+
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+.app h1 {
+  font-size: 1.25rem;
+  margin-bottom: 20px;
+}
+
+.playlist-view {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.playlist-view__empty {
+  color: var(--text);
+  padding: 24px 0;
+  text-align: center;
+}
+
+/* [Phase 2] 아티스트 블록: 연속된 같은 아티스트 곡 묶음을 시각적으로 구분 */
+.artist-block {
+  border-left: 3px solid var(--border);
+  padding-left: 10px;
+}
+
+.artist-block__label {
+  margin: 0 0 2px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-h);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.artist-block__count {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.artist-block__tracks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.track-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 4px;
+}
+
+.track-item__art {
+  border-radius: 6px;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.track-item__info {
+  min-width: 0;
+}
+
+.track-item__title {
+  margin: 0;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-item__artist {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* [Phase 3] 곡 추가 시뮬레이션 */
+.add-track {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.add-track__label {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.add-track__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.add-track__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.add-track__item-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.add-track__button {
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.add-track__empty {
+  font-size: 0.85rem;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+/* [Phase 4] 떨어져 나온 곡 카드 + 드롭 타깃 */
+.misplaced-card {
+  border: 1px dashed #d99;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fff6f6;
+}
+
+.misplaced-card--dragging {
+  opacity: 0.6;
+}
+
+.misplaced-card__label {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  color: #b33;
+}
+
+.misplaced-card__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.misplaced-card__drag-handle {
+  flex: 1;
+  cursor: grab;
+  min-width: 0;
+}
+
+.misplaced-card__button {
+  flex-shrink: 0;
+  border: 1px solid #b33;
+  color: #b33;
+  border-radius: 6px;
+  background: var(--bg);
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.artist-block--drop-target {
+  border-left-color: #9ac;
+}
+
+.artist-block--drop-hover {
+  background: #eef6ff;
+  border-radius: 6px;
+}
+
+.artist-block__drop-hint {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: #69c;
+}
+
+/* 툴바 (정렬 토글 + 비교 보기) */
+.app__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+/* [Phase 5] 정렬 토글 */
+.sort-toggle {
+  display: flex;
+  gap: 6px;
+}
+
+.sort-toggle__button {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.sort-toggle__button--active {
+  background: var(--text-h);
+  color: var(--bg);
+  border-color: var(--text-h);
+}
+
+.app__compare-toggle {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* [Phase 6] As-Is / To-Be 비교 뷰 */
+.compare-view {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.compare-view__title {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.compare-view__columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.compare-view__column-label {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.compare-view__column-label--asis {
+  color: #b33;
+  background: #fff0f0;
+}
+
+.compare-view__column-label--tobe {
+  color: #279;
+  background: #eef6ff;
+}
+
+.compare-view__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.compare-view__highlight {
+  background: #fff8d6;
+  border-radius: 6px;
+}
+
+.compare-view__caption {
+  margin: 6px 0 0;
+  font-size: 0.72rem;
+  color: var(--text);
+}
+
+.compare-view__empty {
+  font-size: 0.85rem;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+@media (max-width: 480px) {
+  .compare-view__columns {
+    grid-template-columns: 1fr;
+  }
+}
