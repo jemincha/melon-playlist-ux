@@ -1,54 +1,239 @@
 /* src/App.css
- * [Phase 1] 최소한의 가독성 레이아웃만. 본격적인 비주얼 디자인은
- * MVP(Phase 4) 완성 이후 별도 스타일링 단계에서 다듬을 예정 (가이드라인 8절 참고).
+ * [리스킨] 사용자 제공 실제 멜론 스크린샷 기준 다크 테마.
+ * 로고/트레이드마크는 사용하지 않고 색상·레이아웃만 참고해 재현함.
  */
 
-.app {
-  max-width: 640px;
+.app-shell {
+  --melon-bg-top: #4d3f79;
+  --melon-bg-mid: #2a2138;
+  --melon-bg-bottom: #121016;
+  --melon-green: #1ed760;
+  --melon-white: #f5f4f7;
+  --melon-gray: #9b97a8;
+  --melon-gray-dim: #726e80;
+  --melon-card: rgba(255, 255, 255, 0.06);
+  --melon-card-border: rgba(255, 255, 255, 0.1);
+
+  min-height: 100vh;
+  max-width: 480px;
   margin: 0 auto;
-  padding: 24px 16px 64px;
+  padding: 44px 16px 48px;
+  background: linear-gradient(
+    180deg,
+    var(--melon-bg-top) 0%,
+    var(--melon-bg-mid) 32%,
+    var(--melon-bg-bottom) 60%
+  );
+  color: var(--melon-white);
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic',
+    sans-serif;
+  position: relative;
 }
 
-.app h1 {
-  font-size: 1.25rem;
-  margin-bottom: 20px;
+.app-shell__disclaimer {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: -44px -16px 12px;
+  padding: 6px 16px;
+  font-size: 0.68rem;
+  text-align: center;
+  color: var(--melon-gray);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
 }
 
+/* 상단 탭바 (장식용) */
+.top-nav-mock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.top-nav-mock__tabs {
+  display: flex;
+  gap: 18px;
+}
+
+.top-nav-mock__tab {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--melon-gray-dim);
+}
+
+.top-nav-mock__tab--active {
+  color: var(--melon-white);
+}
+
+.top-nav-mock__icons {
+  display: flex;
+  gap: 14px;
+}
+
+.top-nav-mock__icon {
+  color: var(--melon-gray);
+  font-size: 1.1rem;
+}
+
+/* 컨트롤 행 (전체선택/곡수 + 오프라인재생/정렬) */
+.app-shell__control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  font-size: 0.8rem;
+  color: var(--melon-gray);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.app-shell__count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-shell__count-checkbox,
+.app-shell__offline-toggle {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid var(--melon-gray-dim);
+}
+
+.app-shell__offline-toggle {
+  border-radius: 9px;
+  width: 28px;
+  height: 16px;
+  background: var(--melon-green);
+  border-color: var(--melon-green);
+  position: relative;
+}
+
+.app-shell__offline-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--melon-white);
+}
+
+.app-shell__control-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.app-shell__offline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 곡 리스트 */
 .playlist-view {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.playlist-view__empty {
+  color: var(--melon-gray);
+  padding: 24px 0;
+  text-align: center;
+}
+
+.artist-block {
+  border-left: 2px solid transparent;
+  padding-left: 6px;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.artist-block--drop-target {
+  border-left-color: var(--melon-green);
+}
+
+.artist-block--drop-hover {
+  background: rgba(30, 215, 96, 0.08);
+  border-radius: 8px;
+}
+
+.artist-block--dragging {
+  opacity: 0.5;
+}
+
+.artist-block--highlighted {
+  background: rgba(30, 215, 96, 0.16);
+  animation: block-flash 1.4s ease-out;
+}
+
+@keyframes block-flash {
+  0% {
+    background: rgba(30, 215, 96, 0.35);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+.artist-block__header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.artist-block__grip {
+  flex-shrink: 0;
+  color: var(--melon-gray-dim);
+  font-size: 0.85rem;
+  padding: 2px 4px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.artist-block__grip:active {
+  cursor: grabbing;
+}
+
+/* 떨어져 나온 곡 트레이 — 항상 목록 맨 위, "정리 대기" 느낌으로 분리 */
+.misplaced-tray {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.playlist-view__empty {
-  color: var(--text);
-  padding: 24px 0;
-  text-align: center;
-}
-
-/* [Phase 2] 아티스트 블록: 연속된 같은 아티스트 곡 묶음을 시각적으로 구분 */
-.artist-block {
-  border-left: 3px solid var(--border);
-  padding-left: 10px;
-}
-
 .artist-block__label {
-  margin: 0 0 2px;
-  font-size: 0.85rem;
+  margin: 0 0 4px 2px;
+  font-size: 0.7rem;
   font-weight: 600;
-  color: var(--text-h);
+  color: var(--melon-gray);
   display: flex;
   align-items: baseline;
   gap: 6px;
 }
 
 .artist-block__count {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   font-weight: 400;
-  color: var(--text);
+  color: var(--melon-gray-dim);
+}
+
+.artist-block__drop-hint {
+  margin-left: auto;
+  font-size: 0.65rem;
+  color: var(--melon-green);
 }
 
 .artist-block__tracks {
@@ -57,11 +242,20 @@
   margin: 0;
 }
 
+/* 곡 한 줄 (실제 스크린샷 레이아웃: 체크박스-앨범아트-정보-드래그핸들) */
 .track-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 4px;
+  padding: 6px 0;
+}
+
+.track-item__checkbox {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--melon-gray-dim);
 }
 
 .track-item__art {
@@ -72,84 +266,50 @@
 
 .track-item__info {
   min-width: 0;
+  flex: 1;
 }
 
 .track-item__title {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--melon-white);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .track-item__artist {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--text);
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: var(--melon-gray);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* [Phase 3] 곡 추가 시뮬레이션 */
-.add-track {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 16px;
-}
-
-.add-track__label {
-  margin: 0 0 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.add-track__list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.add-track__item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 0.85rem;
-}
-
-.add-track__item-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.add-track__button {
+.track-item__handle {
   flex-shrink: 0;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
-  padding: 4px 10px;
-  font-size: 0.8rem;
-  cursor: pointer;
+  color: var(--melon-gray-dim);
+  font-size: 1.1rem;
+  padding: 4px;
 }
 
-.add-track__empty {
-  font-size: 0.85rem;
-  color: var(--text);
-  margin-bottom: 16px;
+.track-item__handle--active {
+  cursor: grab;
+  touch-action: none;
 }
 
-/* [Phase 4] 떨어져 나온 곡 카드 + 드롭 타깃 */
+.track-item__handle--active:active {
+  cursor: grabbing;
+}
+
+/* 떨어져 나온 곡 카드 */
 .misplaced-card {
-  border: 1px dashed #d99;
-  border-radius: 8px;
+  border: 1px dashed #e0a63a;
+  border-radius: 10px;
   padding: 8px;
-  background: #fff6f6;
+  background: rgba(224, 166, 58, 0.08);
 }
 
 .misplaced-card--dragging {
@@ -158,8 +318,8 @@
 
 .misplaced-card__label {
   margin: 0 0 4px;
-  font-size: 0.78rem;
-  color: #b33;
+  font-size: 0.72rem;
+  color: #e0a63a;
 }
 
 .misplaced-card__row {
@@ -176,93 +336,209 @@
 
 .misplaced-card__button {
   flex-shrink: 0;
-  border: 1px solid #b33;
-  color: #b33;
+  border: 1px solid #e0a63a;
+  color: #e0a63a;
   border-radius: 6px;
-  background: var(--bg);
+  background: transparent;
   padding: 4px 10px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   cursor: pointer;
 }
 
-.artist-block--drop-target {
-  border-left-color: #9ac;
-}
-
-.artist-block--drop-hover {
-  background: #eef6ff;
-  border-radius: 6px;
-}
-
-.artist-block__drop-hint {
-  margin-left: auto;
-  font-size: 0.7rem;
-  color: #69c;
-}
-
-/* 툴바 (정렬 토글 + 비교 보기) */
-.app__toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-/* [Phase 5] 정렬 토글 */
+/* 정렬 토글 (컨트롤 행에 인라인으로 붙는 작은 버전) */
 .sort-toggle {
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .sort-toggle__button {
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
-  padding: 4px 10px;
-  font-size: 0.8rem;
+  border: none;
+  background: none;
+  color: var(--melon-gray);
+  padding: 2px 6px;
+  font-size: 0.78rem;
   cursor: pointer;
 }
 
 .sort-toggle__button--active {
-  background: var(--text-h);
-  color: var(--bg);
-  border-color: var(--text-h);
+  color: var(--melon-white);
+  font-weight: 600;
 }
 
-.app__compare-toggle {
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
-  padding: 4px 10px;
-  font-size: 0.8rem;
+/* 맨 위로 스크롤 버튼 — 재생바 자리를 대신함 */
+.scroll-top-button {
+  position: fixed;
+  right: 16px;
+  bottom: 20px;
+  z-index: 30;
+  border: none;
+  border-radius: 999px;
+  background: var(--melon-green);
+  color: #0d0d10;
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 10px 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
   cursor: pointer;
 }
 
-/* [Phase 6] As-Is / To-Be 비교 뷰 */
-.compare-view {
-  border: 1px solid var(--border);
+/* 블록 순서 변경 안내 문구 */
+.app-shell__hint {
+  font-size: 0.68rem;
+  color: var(--melon-gray-dim);
+  margin: 0 0 10px 2px;
+}
+
+/* 블록 헤더 내 위/아래 이동 버튼 */
+.artist-block__move-buttons {
+  margin-left: auto;
+  display: flex;
+  gap: 2px;
+}
+
+.artist-block__move-btn {
+  border: 1px solid var(--melon-card-border);
+  background: var(--melon-card);
+  color: var(--melon-white);
+  border-radius: 4px;
+  font-size: 0.62rem;
+  line-height: 1;
+  padding: 3px 6px;
+  cursor: pointer;
+}
+
+.artist-block__move-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+/* 데모 대시보드 — 실제 멜론과 구분되도록 카드 스타일로 확실히 분리, 목록 위 상단에 배치 */
+.sim-dashboard {
+  margin-bottom: 16px;
+  border: 1px solid rgba(30, 215, 96, 0.25);
+  border-radius: 10px;
+  background: rgba(30, 215, 96, 0.05);
+  padding: 4px;
+}
+
+.sim-dashboard__toggle {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--melon-white);
+  padding: 8px 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sim-dashboard__panel {
+  padding: 4px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sim-dashboard__compare-toggle {
+  border: 1px solid var(--melon-card-border);
+  border-radius: 6px;
+  background: var(--melon-card);
+  color: var(--melon-white);
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+/* 곡 추가 시뮬레이션 */
+.add-track {
+  border: 1px solid var(--melon-card-border);
+  background: var(--melon-card);
   border-radius: 8px;
   padding: 12px;
-  margin-bottom: 16px;
+}
+
+.add-track__label {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--melon-white);
+}
+
+.add-track__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.add-track__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--melon-gray);
+}
+
+.add-track__item-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.add-track__button {
+  flex-shrink: 0;
+  border: 1px solid var(--melon-green);
+  color: var(--melon-green);
+  border-radius: 6px;
+  background: transparent;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.add-track__empty {
+  font-size: 0.8rem;
+  color: var(--melon-gray);
+}
+
+/* As-Is / To-Be 비교 뷰 */
+.compare-view {
+  border: 1px solid var(--melon-card-border);
+  background: var(--melon-card);
+  border-radius: 8px;
+  padding: 12px;
 }
 
 .compare-view__title {
   margin: 0 0 10px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
+  color: var(--melon-white);
 }
 
+/* 항상 상하 배치 — 모바일 폭(최대 480px 컨테이너)에서 좌우 배치는 어떤 브레이크포인트를
+   잡아도 곡 카드가 찌그러지거나 밖으로 밀려날 위험이 있어, 폭 조건 없이 고정함 */
 .compare-view__columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.compare-view__divider {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--melon-green);
+  margin: 2px 0;
 }
 
 .compare-view__column-label {
   margin: 0 0 6px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 4px;
@@ -270,13 +546,13 @@
 }
 
 .compare-view__column-label--asis {
-  color: #b33;
-  background: #fff0f0;
+  color: #e0a63a;
+  background: rgba(224, 166, 58, 0.12);
 }
 
 .compare-view__column-label--tobe {
-  color: #279;
-  background: #eef6ff;
+  color: var(--melon-green);
+  background: rgba(30, 215, 96, 0.12);
 }
 
 .compare-view__list {
@@ -286,24 +562,17 @@
 }
 
 .compare-view__highlight {
-  background: #fff8d6;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 6px;
 }
 
 .compare-view__caption {
   margin: 6px 0 0;
-  font-size: 0.72rem;
-  color: var(--text);
+  font-size: 0.68rem;
+  color: var(--melon-gray);
 }
 
 .compare-view__empty {
-  font-size: 0.85rem;
-  color: var(--text);
-  margin-bottom: 16px;
-}
-
-@media (max-width: 480px) {
-  .compare-view__columns {
-    grid-template-columns: 1fr;
-  }
+  font-size: 0.8rem;
+  color: var(--melon-gray);
 }

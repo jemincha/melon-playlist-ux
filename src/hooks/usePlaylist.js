@@ -62,5 +62,22 @@ export function usePlaylist() {
     });
   }
 
-  return { tracks, addTrack, insertIntoArtistBlock };
+  /**
+   * reorderByBlocks(newTracks) — 블록 단위 순서 조절
+   * - PlaylistView가 블록 드래그 결과로 이미 재배열까지 끝낸 새 tracks 배열을 그대로 받아
+   *   반영한다. 재배열 계산 자체(블록을 flatMap해서 새 순서로 합치는 것)는 PlaylistView
+   *   쪽에 두는 게 자연스러움 — usePlaylist는 "블록 인식" 로직(groupByArtist)을 직접
+   *   갖고 있지 않고 utils에서 가져다 쓰는 입장이라, 여기서 새로 그 계산을 반복하기보다
+   *   PlaylistView가 계산한 결과를 그대로 신뢰하는 편이 중복을 줄임.
+   * - 방어 코드: 곡 개수가 달라지면(= 계산 과정에서 곡이 유실/중복됐다면) 무시하고 이전
+   *   상태를 유지한다.
+   */
+  function reorderByBlocks(newTracks) {
+    setTracks((prevTracks) => {
+      if (newTracks.length !== prevTracks.length) return prevTracks;
+      return newTracks;
+    });
+  }
+
+  return { tracks, addTrack, insertIntoArtistBlock, reorderByBlocks };
 }

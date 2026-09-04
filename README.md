@@ -23,7 +23,7 @@
 ## 기술 스택
 
 - React 19 + Vite
-- [@dnd-kit/core](https://dndkit.com/) — 드래그 앤 드롭
+- [@dnd-kit/core](https://dndkit.com/), @dnd-kit/sortable, @dnd-kit/utilities — 드래그 앤 드롭 (곡 병합, 블록 재정렬, 블록 내부 트랙 재정렬)
 - 백엔드 없음 — 모든 데이터는 프론트 상태값(더미 JSON)으로만 관리
 
 ## 실행 방법
@@ -44,9 +44,20 @@ npm run dev
   실제 멜론처럼 무조건 맨 뒤에 붙는 문제 상황이 재현됨
 - **블록으로 이동 (To-Be)**: 맨 뒤에 떨어져 나온 곡을 드래그해서 같은 아티스트의
   메인 블록에 놓거나, "블록으로 이동" 버튼을 눌러 즉시 병합 가능
-- **정렬 토글**: 기본순 / 아티스트 가나다순 전환
 - **As-Is / To-Be 비교 보기**: 떨어져 나온 곡이 있을 때, 현재 상태와 병합했을 때의
-  모습을 나란히 미리보기로 비교
+  모습을 위아래로 비교 (모바일 폭에서도 안 깨지도록 상하 배치로 고정)
+- **멜론 실제 UI 리스킨**: 사용자 제공 실제 스크린샷을 기준으로 다크 그라디언트 배경,
+  상단 탭바, 원형 체크박스 등 실제 서비스에 가까운 룩앤필로 재구성 (화면 상단에
+  "비공식 UI 시뮬레이션" 배지로 명확히 구분)
+- **데모 대시보드 상단 배치**: 곡 추가/비교 도구를 화면 최상단에 고정해 As-Is/To-Be를
+  스크롤 없이 바로 확인 가능
+- **병합 시 자동 스크롤 + 하이라이트**: 곡을 병합하면 해당 아티스트 블록으로 자동
+  스크롤되고 잠깐 초록색으로 반짝여 결과를 바로 확인 가능. 우하단 "맨 위로" 버튼으로
+  대시보드로 빠르게 복귀
+- **아티스트 블록 단위 재정렬**: 블록 헤더의 ⠿ 아이콘을 드래그하거나 ▲▼ 버튼으로
+  플레이리스트 내 블록 전체 순서를 변경
+- **블록 내부 트랙 재정렬**: 각 곡의 ≡ 핸들을 드래그해 같은 아티스트 블록 안에서
+  곡 순서를 세부 조정 (다른 블록으로는 이동 불가 — 병합 드롭존을 통해서만 가능하도록 제한)  
 
 ## 진행 상황
 
@@ -57,6 +68,10 @@ npm run dev
 - [x] Phase 5 — 정렬 토글 (선택 기능)
 - [x] Phase 6 — As-Is/To-Be 비교 뷰 (선택 기능)
 - [ ] Phase 7 — 배포 및 최종 정리 (Vercel/GitHub Pages 배포는 직접 진행 필요)
+  - [x] Phase 7-1 — 멜론 실제 UI 리스킨 (다크 테마 + 상단 탭바)
+  - [x] Phase 7-2 — UX 디테일 개선 (대시보드 상단 배치, 자동 스크롤/하이라이트, 맨 위로 버튼)
+  - [x] Phase 7-3 — 블록 단위 + 블록 내부 트랙 단위 드래그 재정렬
+  - [ ] Phase 7-4 — 배포 (Vercel/GitHub Pages)
 
 ## 프로젝트 구조
 
@@ -67,20 +82,19 @@ src/
 │   ├── dummyTracks.js         # 실제 정제한 224곡 더미 데이터
 │   └── newTrackCandidates.js  # 곡 추가 시뮬레이션용 신곡 후보
 ├── hooks/
-│   └── usePlaylist.js         # 플레이리스트 상태 (addTrack, insertIntoArtistBlock)
+│   └── usePlaylist.js         # 플레이리스트 상태 (addTrack, insertIntoArtistBlock, reorderByBlocks)
 ├── components/
-│   ├── PlaylistView.jsx       # 전체 목록 + 드래그 컨텍스트
-│   ├── ArtistBlock.jsx        # 아티스트 블록 (드롭 타깃)
-│   ├── TrackItem.jsx          # 곡 한 줄
+│   ├── PlaylistView.jsx       # 전체 목록 + 드래그 컨텍스트 (3종 드래그 판별)
+│   ├── ArtistBlock.jsx        # 아티스트 블록 (드롭 타깃 + 블록 정렬 + 내부 트랙 정렬)
+│   ├── TrackItem.jsx          # 곡 한 줄 (정렬 가능 버전은 SortableTrackItem이 감쌈)
+│   ├── SortableTrackItem.jsx  # 블록 내부 트랙 드래그 재정렬용 래퍼
 │   ├── MisplacedTrackCard.jsx # 떨어져 나온 곡 카드 (드래그 소스)
 │   ├── AddTrackButton.jsx     # 곡 추가 시뮬레이션 UI
 │   ├── SortToggle.jsx         # 정렬 토글
-│   └── CompareView.jsx        # As-Is/To-Be 비교 뷰
+│   ├── CompareView.jsx        # As-Is/To-Be 비교 뷰 (상하 배치)
+│   ├── TopNavMock.jsx         # 상단 탭바 (장식용, 리스킨)
+│   └── ScrollTopButton.jsx    # 맨 위로 스크롤 버튼
 └── utils/
     ├── groupByArtist.js       # 연속 구간 기준 아티스트 블록핑
-    └── analyzeBlocks.js       # 메인 블록 / 떨어져 나온 블록 판정
+    └── analyzeBlocks.js       # 메인 블록 / 떨어져 나온 블록 판정```
 ```
-
-## 배운 점
-
-(구현하면서 겪은 문제·해결 과정을 여기에 기록 — 실사용 확인 후 채워넣기)

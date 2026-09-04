@@ -4,7 +4,8 @@
 // 현재 "떨어져 나온 곡"이 있으면, 그 곡을 기준으로
 // - As-Is: 지금 플레이리스트 맨 뒤쪽에서 엉뚱한 곡들 사이에 끼어있는 모습
 // - To-Be: 같은 아티스트 블록에 합쳐졌을 때의 모습 (미리보기, 실제로 상태를 바꾸지는 않음)
-// 을 나란히 보여준다. 실제 병합은 여전히 PlaylistView의 드래그/버튼으로 수행.
+// 을 [수정] 위아래로 보여준다 (기존 좌우 배치는 모바일 폭에서 넘침 문제가 있어 변경).
+// 실제 병합은 여전히 PlaylistView의 드래그/버튼으로 수행.
 //
 // Props:
 // - tracks: Track[] (usePlaylist().tracks)
@@ -67,8 +68,12 @@ function CompareView({ tracks }) {
             ))}
           </ul>
           <p className="compare-view__caption">
-            ↑ {misplacedBlock.artistName} 블록과 상관없는 곡들 사이에 끼어있음
+            {misplacedBlock.artistName} 블록과 상관없는 곡들 사이에 끼어있음
           </p>
+        </div>
+
+        <div className="compare-view__divider" aria-hidden="true">
+          ↓ 병합하면
         </div>
 
         <div className="compare-view__column">
