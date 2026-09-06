@@ -1,29 +1,54 @@
 // src/App.jsx
-//
-// 최상위 컴포넌트. usePlaylist 훅으로 상태를 가져와 하위 컴포넌트에 전달하는
-// "조립" 역할만 담당.
-//
-// [리스킨] 다크 테마 + 상단 탭바 목업.
-// [개선] 데모 대시보드(곡 추가/비교)를 목록 위로 올려 한눈에 보이게 함.
-// [수정] 하단 재생바(PlayerBarMock) 제거 — 불필요하다는 피드백 반영.
-//        대신 스크롤 후 상단 대시보드로 빠르게 복귀할 수 있는 ScrollTopButton 추가.
-// [신규] 블록 순서 조절(드래그+버튼) 발견성을 위한 안내 문구 추가.
-
 import { useState } from 'react';
 import './App.css';
 import { usePlaylist } from './hooks/usePlaylist';
+import { useTrackSelection } from './hooks/useTrackSelection';
+import { isTrackDownloaded } from './utils/downloadStatus';
 import PlaylistView from './components/PlaylistView';
 import AddTrackButton from './components/AddTrackButton';
 import SortToggle from './components/SortToggle';
 import CompareView from './components/CompareView';
 import TopNavMock from './components/TopNavMock';
 import ScrollTopButton from './components/ScrollTopButton';
+import SearchBar from './components/SearchBar';
+import PlaylistMetaPanel from './components/PlaylistMetaPanel';
+import BulkActionBar from './components/BulkActionBar';
 
 function App() {
-  const { tracks, addTrack, insertIntoArtistBlock, reorderByBlocks } = usePlaylist();
+  const { tracks, addTrack, insertIntoArtistBlock, reorderByBlocks, deleteTracks } =
+    usePlaylist();
+  const selection = useTrackSelection();
+
   const [sortMode, setSortMode] = useState('default');
   const [showCompare, setShowCompare] = useState(false);
-  const [showSimTools, setShowSimTools] = useState(true); // 기본으로 펼쳐서 한눈에 보이게
+  const [showSimTools, setShowSimTools] = useState(true);
+
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isMetaOpen, setIsMetaOpen] = useState(false);
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
+
+  const allSelected = selection.selectedIds.size > 0 && selection.selectedIds.size === tracks.length;
+
+  function handleToggleSearch() {
+    setIsSearchOpen((prev) => {
+      if (prev) setSearchQuery('');
+      return !prev;
+    });
+  }
+
+  function handleToggleSelectAll() {
+    if (allSelected) {
+      selection.clear();
+    } else {
+      selection.selectAll(tracks.map((t) => t.trackId));
+    }
+  }
+
+  function handleBulkDelete() {
+    deleteTracks(selection.selectedIds);
+    selection.clear();
+  }
 
   return (
     <div className="app-shell">
@@ -31,10 +56,26 @@ function App() {
         실제 멜론 서비스와 무관한 개인 포트폴리오용 비공식 UI 시뮬레이션입니다
       </p>
 
-      <TopNavMock />
+      <TopNavMock
+        isSearchOpen={isSearchOpen}
+        onToggleSearch={handleToggleSearch}
+        isMetaOpen={isMetaOpen}
+        onToggleMeta={() => setIsMetaOpen((prev) => !prev)}
+      />
 
-      {/* 데모 대시보드 — 실제 멜론에는 없는, 이 프로토타입만의 시연 도구.
-          목록 위 상단에 고정 카드로 배치해 As-Is/To-Be 비교를 한눈에 볼 수 있게 함 */}
+      {isSearchOpen && (
+        <SearchBar
+          query={searchQuery}
+          onChange={setSearchQuery}
+          onClose={() => {
+            setIsSearchOpen(false);
+            setSearchQuery('');
+          }}
+        />
+      )}
+
+      {isMetaOpen && <PlaylistMetaPanel trackCount={tracks.length} />}
+
       <section className="sim-dashboard">
         <button
           type="button"
@@ -60,20 +101,35 @@ function App() {
 
       <div className="app-shell__control-row">
         <span className="app-shell__count">
-          <span className="app-shell__count-checkbox" aria-hidden="true" />
+          <input
+            type="checkbox"
+            className="app-shell__count-checkbox app-shell__count-checkbox--real"
+            checked={allSelected}
+            onChange={handleToggleSelectAll}
+            aria-label="전체 선택"
+          />
           {tracks.length}곡
         </span>
         <div className="app-shell__control-right">
-          <span className="app-shell__offline">
-            <span className="app-shell__offline-toggle" aria-hidden="true" />
+          <button
+            type="button"
+            className="app-shell__offline"
+            aria-pressed={isOfflineMode}
+            onClick={() => setIsOfflineMode((prev) => !prev)}
+          >
+            <span
+              className={`app-shell__offline-toggle${isOfflineMode ? ' app-shell__offline-toggle--on' : ''}`}
+              aria-hidden="true"
+            />
             오프라인 재생
-          </span>
+          </button>
           <SortToggle sortMode={sortMode} onChange={setSortMode} />
         </div>
       </div>
 
       <p className="app-shell__hint">
-        ⠿ 드래그하거나 블록 옆 ▲▼ 버튼으로 아티스트 블록 순서를 바꿀 수 있어요
+        ⠿ 블록 드래그, 곡의 ≡ 핸들로 블록 내부 순서, ▲▼ 버튼도 가능 · 체크박스로 여러 곡
+        선택해 일괄 삭제
       </p>
 
       <PlaylistView
@@ -81,6 +137,17 @@ function App() {
         onInsertIntoArtistBlock={insertIntoArtistBlock}
         onReorderBlocks={reorderByBlocks}
         sortMode={sortMode}
+        searchQuery={searchQuery}
+        selectedIds={selection.selectedIds}
+        onToggleSelect={selection.toggle}
+        isOfflineMode={isOfflineMode}
+        isDownloaded={isTrackDownloaded}
+      />
+
+      <BulkActionBar
+        selectedCount={selection.selectedIds.size}
+        onDelete={handleBulkDelete}
+        onClear={selection.clear}
       />
 
       <ScrollTopButton />

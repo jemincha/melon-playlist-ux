@@ -24,6 +24,7 @@
 
 - React 19 + Vite
 - [@dnd-kit/core](https://dndkit.com/), @dnd-kit/sortable, @dnd-kit/utilities — 드래그 앤 드롭 (곡 병합, 블록 재정렬, 블록 내부 트랙 재정렬)
+- Node.js 내장 `node:test` — 핵심 로직 단위 테스트
 - 백엔드 없음 — 모든 데이터는 프론트 상태값(더미 JSON)으로만 관리
 
 ## 실행 방법
@@ -34,6 +35,15 @@ npm run dev
 ```
 
 브라우저에서 `http://localhost:5173` 접속.
+
+### 테스트
+
+\`\`\`bash
+npm test
+\`\`\`
+
+`groupByArtist`, `analyzeBlocks`, `insertIntoArtistBlock`(블록 병합 계산), `downloadStatus`
+4개 순수 함수에 대해 총 13개 단위 테스트 실행.
 
 ## 기능
 
@@ -58,6 +68,14 @@ npm run dev
   플레이리스트 내 블록 전체 순서를 변경
 - **블록 내부 트랙 재정렬**: 각 곡의 ≡ 핸들을 드래그해 같은 아티스트 블록 안에서
   곡 순서를 세부 조정 (다른 블록으로는 이동 불가 — 병합 드롭존을 통해서만 가능하도록 제한)  
+- **검색**: 상단 검색 아이콘을 누르면 곡명/아티스트명 실시간 필터링 (검색 중에는 블록
+  편집 대신 단순 결과 목록으로 전환)
+- **플레이리스트 정보 패널**: 펼치기 아이콘으로 제작자/수록곡 수/장르 등 메타정보 확인
+- **다중 선택 + 일괄 삭제**: 곡별 체크박스 또는 전체선택으로 여러 곡을 골라 한 번에 삭제
+- **오프라인 재생 시뮬레이션**: 토글을 켜면 다운로드 안 된 것으로 시뮬레이션된 곡이
+  흐리게 표시되고 "다운로드 필요" 뱃지가 붙음
+- **아티스트 이니셜 앨범아트**: 외부 이미지 없이 아티스트명 기반 그라디언트+이니셜을
+  코드로 생성해 사용 (네트워크 의존성 제거)
 
 ## 진행 상황
 
@@ -67,34 +85,45 @@ npm run dev
 - [x] Phase 4 — 드래그 기반 블록 삽입 (To-Be 동작) — **MVP 완성**
 - [x] Phase 5 — 정렬 토글 (선택 기능)
 - [x] Phase 6 — As-Is/To-Be 비교 뷰 (선택 기능)
-- [ ] Phase 7 — 배포 및 최종 정리 (Vercel/GitHub Pages 배포는 직접 진행 필요)
-  - [x] Phase 7-1 — 멜론 실제 UI 리스킨 (다크 테마 + 상단 탭바)
-  - [x] Phase 7-2 — UX 디테일 개선 (대시보드 상단 배치, 자동 스크롤/하이라이트, 맨 위로 버튼)
-  - [x] Phase 7-3 — 블록 단위 + 블록 내부 트랙 단위 드래그 재정렬
-  - [ ] Phase 7-4 — 배포 (Vercel/GitHub Pages)
+- [x] Phase 7-1 — 멜론 실제 UI 리스킨 (다크 테마 + 상단 탭바)
+- [x] Phase 7-2 — UX 디테일 개선 (대시보드 상단 배치, 자동 스크롤/하이라이트, 맨 위로 버튼)
+- [x] Phase 7-3 — 블록 단위 + 블록 내부 트랙 단위 드래그 재정렬
+- [x] Phase 8-1 — 코드 정리 + 핵심 로직 단위 테스트 13개
+- [x] Phase 8-2 — 앨범아트를 picsum 랜덤 사진 → 이니셜 placeholder로 교체
+- [x] Phase 8-3 — 그래픽만 있던 요소(검색/메타패널/체크박스/오프라인 토글) 전부 기능화
+- [ ] Phase 8-4 — 배포 (Vercel/GitHub Pages)
+
 
 ## 프로젝트 구조
 
 ```
 src/
-├── App.jsx                    # 최상위 조립 컴포넌트
+├── App.jsx
 ├── data/
-│   ├── dummyTracks.js         # 실제 정제한 224곡 더미 데이터
-│   └── newTrackCandidates.js  # 곡 추가 시뮬레이션용 신곡 후보
+│   ├── dummyTracks.js
+│   └── newTrackCandidates.js
 ├── hooks/
-│   └── usePlaylist.js         # 플레이리스트 상태 (addTrack, insertIntoArtistBlock, reorderByBlocks)
+│   ├── usePlaylist.js          # addTrack, insertIntoArtistBlock, reorderByBlocks, deleteTracks
+│   └── useTrackSelection.js    # 다중 선택 상태 관리
 ├── components/
-│   ├── PlaylistView.jsx       # 전체 목록 + 드래그 컨텍스트 (3종 드래그 판별)
-│   ├── ArtistBlock.jsx        # 아티스트 블록 (드롭 타깃 + 블록 정렬 + 내부 트랙 정렬)
-│   ├── TrackItem.jsx          # 곡 한 줄 (정렬 가능 버전은 SortableTrackItem이 감쌈)
-│   ├── SortableTrackItem.jsx  # 블록 내부 트랙 드래그 재정렬용 래퍼
-│   ├── MisplacedTrackCard.jsx # 떨어져 나온 곡 카드 (드래그 소스)
-│   ├── AddTrackButton.jsx     # 곡 추가 시뮬레이션 UI
-│   ├── SortToggle.jsx         # 정렬 토글
-│   ├── CompareView.jsx        # As-Is/To-Be 비교 뷰 (상하 배치)
-│   ├── TopNavMock.jsx         # 상단 탭바 (장식용, 리스킨)
-│   └── ScrollTopButton.jsx    # 맨 위로 스크롤 버튼
+│   ├── PlaylistView.jsx        # 블록/드래그 + 검색 모드 분기
+│   ├── ArtistBlock.jsx
+│   ├── TrackItem.jsx           # 실제 체크박스 + 오프라인 표시
+│   ├── SortableTrackItem.jsx
+│   ├── MisplacedTrackCard.jsx
+│   ├── AddTrackButton.jsx
+│   ├── SortToggle.jsx
+│   ├── CompareView.jsx
+│   ├── TopNavMock.jsx          # 검색/메타패널 토글 버튼
+│   ├── ScrollTopButton.jsx
+│   ├── SearchBar.jsx
+│   ├── PlaylistMetaPanel.jsx
+│   └── BulkActionBar.jsx
 └── utils/
-    ├── groupByArtist.js       # 연속 구간 기준 아티스트 블록핑
-    └── analyzeBlocks.js       # 메인 블록 / 떨어져 나온 블록 판정```
+    ├── groupByArtist.js (+test)
+    ├── analyzeBlocks.js (+test)
+    ├── insertIntoArtistBlock.js (+test)   # usePlaylist에서 분리한 순수 함수
+    ├── hashString.js
+    ├── downloadStatus.js (+test)
+    └── placeholderAlbumArt.js
 ```

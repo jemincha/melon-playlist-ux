@@ -1,21 +1,13 @@
 // src/components/MisplacedTrackCard.jsx
 //
-// "블록에서 떨어져 나온" 곡(주로 AddTrackButton으로 방금 추가된 신곡)을 표시하는
-// 컴포넌트. As-Is 문제 상황 그 자체를 시각적으로 보여주는 역할.
-//
-// 두 가지 방법으로 같은 아티스트 블록에 합칠 수 있게 함:
-// 1) 드래그: useDraggable로 카드 자체를 드래그 가능하게 만들고,
-//    해당 아티스트의 메인 블록(ArtistBlock에서 isDropTarget=true인 곳)에 드롭
-// 2) 클릭: "블록으로 이동" 버튼 — 드래그가 번거롭거나 잘 안 될 때의 대체 수단
-//
-// Props:
-// - track: 떨어져 나온 곡 (Track)
-// - onMoveToMain(): 클릭 시 즉시 병합 실행 콜백
+// [참고] 여기엔 다중 선택 체크박스를 넣지 않음 — 카드 전체가 이미 드래그 핸들 역할을
+// 하고 있어서, 체크박스를 누르는 제스처와 드래그 시작 제스처가 충돌할 수 있기 때문.
+// 오프라인 재생 표시는 시각 전용이라 충돌 없이 그대로 전달함.
 
 import { useDraggable } from '@dnd-kit/core';
 import TrackItem from './TrackItem';
 
-function MisplacedTrackCard({ track, onMoveToMain }) {
+function MisplacedTrackCard({ track, onMoveToMain, isOfflineMode = false, isDownloaded }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: track.trackId,
   });
@@ -43,7 +35,10 @@ function MisplacedTrackCard({ track, onMoveToMain }) {
           {...attributes}
           {...listeners}
         >
-          <TrackItem track={track} />
+          <TrackItem
+            track={track}
+            isOfflineUnavailable={isOfflineMode && isDownloaded && !isDownloaded(track.trackId)}
+          />
         </div>
         <button type="button" className="misplaced-card__button" onClick={onMoveToMain}>
           블록으로 이동
