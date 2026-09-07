@@ -49,18 +49,32 @@ function PlaylistView({
     setScrollTargetArtist(null);
   }, [tracks, scrollTargetArtist]);
 
-  if (tracks.length === 0) {
-    return <p className="playlist-view__empty">플레이리스트가 비어있습니다.</p>;
+    if (tracks.length === 0) {
+    return (
+      <p className="empty-state" role="status" aria-live="polite">
+        <span className="empty-state__icon" aria-hidden="true">
+          🎵
+        </span>
+        플레이리스트가 비어있습니다.
+      </p>
+    );
   }
 
-  const isSearching = searchQuery.trim() !== '';
+    const isSearching = searchQuery.trim() !== '';
   if (isSearching) {
     const filtered = tracks.filter((t) => matchesQuery(t, searchQuery));
     return (
       <div className="search-results">
-        <p className="search-results__count">{filtered.length}곡 검색됨</p>
+        <p className="search-results__count" role="status" aria-live="polite">
+          {filtered.length}곡 검색됨
+        </p>
         {filtered.length === 0 ? (
-          <p className="playlist-view__empty">검색 결과가 없습니다.</p>
+          <p className="empty-state">
+            <span className="empty-state__icon" aria-hidden="true">
+              🔍
+            </span>
+            검색 결과가 없습니다.
+          </p>
         ) : (
           <ul className="playlist-view playlist-view--flat">
             {filtered.map((track) => (
