@@ -1,41 +1,40 @@
-// src/utils/analyzeBlocks.test.js
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { groupByArtist } from './groupByArtist.js';
 import { analyzeBlocks } from './analyzeBlocks.js';
-
-function track(trackId, artistName) {
-  return { trackId, artistName, title: trackId, album: '', albumArt: '', addedAt: '' };
-}
-
-test('블록이 1개뿐인 아티스트는 misplaced/dropTarget 둘 다 false', () => {
-  const blocks = groupByArtist([track('t1', 'A'), track('t2', 'A')]);
-  const analyzed = analyzeBlocks(blocks);
-
-  assert.equal(analyzed[0].isMisplaced, false);
-  assert.equal(analyzed[0].isDropTarget, false);
+const t = (trackId, artistName, pendingPlacement = false) => ({
+  trackId,
+  artistName,
+  pendingPlacement,
 });
-
-test('같은 아티스트 블록이 2개면, 더 큰 쪽이 dropTarget이고 작은 쪽이 misplaced', () => {
-  const tracks = [track('t1', 'A'), track('t2', 'A'), track('t3', 'B'), track('t4', 'A')];
-  const analyzed = analyzeBlocks(groupByArtist(tracks));
-
-  const bigABlock = analyzed.find((b) => b.artistName === 'A' && b.tracks.length === 2);
-  const smallABlock = analyzed.find((b) => b.artistName === 'A' && b.tracks.length === 1);
-
-  assert.equal(bigABlock.isDropTarget, true);
-  assert.equal(bigABlock.isMisplaced, false);
-  assert.equal(smallABlock.isDropTarget, false);
-  assert.equal(smallABlock.isMisplaced, true);
+test('기존 분리 구간을 오배치로 판단하지 않고 모든 곡을 보존한다', () => {
+  const tracks = [t('a1', 'A'), t('b', 'B'), t('a2', 'A'), t('a3', 'A')];
+  const blocks = analyzeBlocks(groupByArtist(tracks));
+  assert.ok(blocks.every((b) => !b.isMisplaced));
+  assert.deepEqual(
+    blocks.flatMap((b) => b.tracks),
+    tracks
+  );
 });
-
-test('같은 아티스트 블록 크기가 동점이면 먼저 나온 블록을 메인으로 취급한다', () => {
-  const tracks = [track('t1', 'A'), track('t2', 'B'), track('t3', 'A')];
-  const analyzed = analyzeBlocks(groupByArtist(tracks));
-
-  const firstABlock = analyzed.find((b) => b.blockId === 'block-t1');
-  const secondABlock = analyzed.find((b) => b.blockId === 'block-t3');
-
-  assert.equal(firstABlock.isDropTarget, true);
-  assert.equal(secondABlock.isMisplaced, true);
+test('여러 신곡을 모두 후보로 표시하고 기존 구간들을 목적지로 제공한다', () => {
+  const blocks = analyzeBlocks(
+    groupByArtist([
+      t('a1', 'A'),
+      t('b', 'B'),
+      t('a2', 'A'),
+      t('c', 'C'),
+      t('n1', 'A', true),
+      t('n2', 'A', true),
+    ])
+  );
+  const candidate = blocks.find((b) => b.isMisplaced);
+  assert.equal(candidate.tracks.length, 2);
+  assert.equal(candidate.targetBlocks.length, 2);
+  assert.equal(blocks.filter((b) => b.isDropTarget).length, 2);
+});
+test('신규 아티스트와 기존 구간에 연속된 신곡은 이동 후보가 아니다', () => {
+  const blocks = analyzeBlocks(
+    groupByArtist([t('a', 'A'), t('n', 'A', true), t('c', 'C', true)])
+  );
+  assert.ok(blocks.every((b) => !b.isMisplaced));
 });

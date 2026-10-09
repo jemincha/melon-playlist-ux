@@ -23,25 +23,30 @@ function CompareView({ tracks }) {
   if (!misplacedBlock) {
     return (
       <p className="compare-view__empty">
-        지금은 비교할 대상이 없습니다. 먼저 "곡 추가 시뮬레이션"에서 신곡을 추가해보세요.
+        지금은 비교할 대상이 없습니다. 먼저 "곡 추가 시뮬레이션"에서 신곡을
+        추가해보세요.
       </p>
     );
   }
 
   const misplacedTrack = misplacedBlock.tracks[0];
-  const mainBlock = blocks.find(
-    (b) => b.artistName === misplacedBlock.artistName && b.isDropTarget
+  const mainBlock = misplacedBlock.targetBlocks.reduce((a, b) =>
+    b.tracks.length > a.tracks.length ? b : a
   );
 
   // As-Is: 전체 tracks 배열에서 misplacedTrack 위치를 찾아 그 앞뒤 맥락을 함께 보여줌
-  const misplacedIndex = tracks.findIndex((t) => t.trackId === misplacedTrack.trackId);
+  const misplacedIndex = tracks.findIndex(
+    (t) => t.trackId === misplacedTrack.trackId
+  );
   const asIsContext = tracks.slice(
     Math.max(0, misplacedIndex - TAIL_CONTEXT_SIZE),
     misplacedIndex + 1
   );
 
   // To-Be: 메인 블록 곡들 + 맨 끝에 misplacedTrack을 합친 미리보기 (실제 상태 변경 아님)
-  const toBePreview = mainBlock ? [...mainBlock.tracks, misplacedTrack] : [misplacedTrack];
+  const toBePreview = mainBlock
+    ? [...mainBlock.tracks, misplacedTrack]
+    : [misplacedTrack];
 
   return (
     <section className="compare-view">
@@ -63,7 +68,7 @@ function CompareView({ tracks }) {
                     : ''
                 }
               >
-                <TrackItem track={track} />
+                <TrackItem track={track} as="div" />
               </li>
             ))}
           </ul>
@@ -78,7 +83,7 @@ function CompareView({ tracks }) {
 
         <div className="compare-view__column">
           <p className="compare-view__column-label compare-view__column-label--tobe">
-            To-Be (병합 시 미리보기)
+            To-Be (가장 큰 기존 구간 기준 미리보기)
           </p>
           <ul className="compare-view__list">
             {toBePreview.map((track) => (
@@ -90,7 +95,7 @@ function CompareView({ tracks }) {
                     : ''
                 }
               >
-                <TrackItem track={track} />
+                <TrackItem track={track} as="div" />
               </li>
             ))}
           </ul>

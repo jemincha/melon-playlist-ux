@@ -1,6 +1,10 @@
 // src/components/ArtistBlock.jsx
-import { useDroppable } from '@dnd-kit/core';
-import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useDndContext, useDroppable } from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import SortableTrackItem from './SortableTrackItem';
 
@@ -17,10 +21,16 @@ function ArtistBlock({
   onToggleSelect,
   isOfflineMode = false,
   isDownloaded,
+  canReorder = true,
 }) {
+  const { active } = useDndContext();
+  const draggedCandidate = active?.data.current;
   const { setNodeRef: setDropRef, isOver } = useDroppable({
-    id: `drop-${block.artistName}`,
-    disabled: !isDropTarget,
+    id: `drop-${block.blockId}`,
+    disabled:
+      !isDropTarget ||
+      draggedCandidate?.type !== 'pending-track' ||
+      draggedCandidate.artistName !== block.artistName,
   });
 
   const {
@@ -30,12 +40,12 @@ function ArtistBlock({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: block.blockId });
+  } = useSortable({ id: block.blockId, disabled: !canReorder });
 
   function combinedRef(node) {
     setSortableRef(node);
     if (isDropTarget) setDropRef(node);
-    registerRef?.(block.artistName, node);
+    registerRef?.(block.blockId, node);
   }
 
   const style = {
@@ -64,11 +74,13 @@ function ArtistBlock({
         >
           ⠿
         </span>
-        {block.tracks.length > 1 && (
+        {(block.tracks.length > 1 || isDropTarget) && (
           <p className="artist-block__label">
             {block.artistName}
             <span className="artist-block__count">{block.tracks.length}</span>
-            {isDropTarget && <span className="artist-block__drop-hint">여기로 드롭</span>}
+            {isDropTarget && (
+              <span className="artist-block__drop-hint">여기로 드롭</span>
+            )}
           </p>
         )}
         <div className="artist-block__move-buttons">
@@ -101,9 +113,12 @@ function ArtistBlock({
             <SortableTrackItem
               key={track.trackId}
               track={track}
+              canReorder={canReorder}
               isSelected={selectedIds?.has(track.trackId)}
               onToggleSelect={onToggleSelect}
-              isOfflineUnavailable={isOfflineMode && isDownloaded && !isDownloaded(track.trackId)}
+              isOfflineUnavailable={
+                isOfflineMode && isDownloaded && !isDownloaded(track.trackId)
+              }
             />
           ))}
         </ul>

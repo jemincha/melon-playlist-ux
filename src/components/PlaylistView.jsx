@@ -1,7 +1,11 @@
 // src/components/PlaylistView.jsx
 import { useEffect, useRef, useState } from 'react';
 import { DndContext } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
 import ArtistBlock from './ArtistBlock';
 import MisplacedTrackCard from './MisplacedTrackCard';
 import TrackItem from './TrackItem';
@@ -10,14 +14,17 @@ import { analyzeBlocks } from '../utils/analyzeBlocks';
 
 function sortBlocks(blocks, sortMode) {
   if (sortMode !== 'artist-az') return blocks;
-  return [...blocks].sort((a, b) => a.artistName.localeCompare(b.artistName, 'ko'));
+  return [...blocks].sort((a, b) =>
+    a.artistName.localeCompare(b.artistName, 'ko')
+  );
 }
 
 function matchesQuery(track, query) {
   const q = query.trim().toLowerCase();
   if (!q) return true;
   return (
-    track.title.toLowerCase().includes(q) || track.artistName.toLowerCase().includes(q)
+    track.title.toLowerCase().includes(q) ||
+    track.artistName.toLowerCase().includes(q)
   );
 }
 
@@ -42,14 +49,16 @@ function PlaylistView({
     if (node) {
       node.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setHighlightArtist(scrollTargetArtist);
-      const timer = setTimeout(() => setHighlightArtist(null), 1400);
-      setScrollTargetArtist(null);
+      const timer = setTimeout(() => {
+        setHighlightArtist(null);
+        setScrollTargetArtist(null);
+      }, 1400);
       return () => clearTimeout(timer);
     }
     setScrollTargetArtist(null);
   }, [tracks, scrollTargetArtist]);
 
-    if (tracks.length === 0) {
+  if (tracks.length === 0) {
     return (
       <p className="empty-state" role="status" aria-live="polite">
         <span className="empty-state__icon" aria-hidden="true">
@@ -60,7 +69,7 @@ function PlaylistView({
     );
   }
 
-    const isSearching = searchQuery.trim() !== '';
+  const isSearching = searchQuery.trim() !== '';
   if (isSearching) {
     const filtered = tracks.filter((t) => matchesQuery(t, searchQuery));
     return (
@@ -83,7 +92,9 @@ function PlaylistView({
                 track={track}
                 isSelected={selectedIds?.has(track.trackId)}
                 onToggleSelect={onToggleSelect}
-                isOfflineUnavailable={isOfflineMode && isDownloaded && !isDownloaded(track.trackId)}
+                isOfflineUnavailable={
+                  isOfflineMode && isDownloaded && !isDownloaded(track.trackId)
+                }
               />
             ))}
           </ul>
@@ -99,17 +110,18 @@ function PlaylistView({
   const misplacedBlocks = orderedBlocks.filter((b) => b.isMisplaced);
   const normalBlocks = orderedBlocks.filter((b) => !b.isMisplaced);
 
-  function registerBlockRef(artistName, node) {
-    if (node) blockRefs.current[artistName] = node;
+  function registerBlockRef(blockId, node) {
+    if (node) blockRefs.current[blockId] = node;
+    else delete blockRefs.current[blockId];
   }
 
-  function handleMergeTrack(trackId) {
-    const track = tracks.find((t) => t.trackId === trackId);
-    onInsertIntoArtistBlock(trackId);
-    if (track) setScrollTargetArtist(track.artistName);
+  function handleMergeTrack(trackId, targetBlockId) {
+    onInsertIntoArtistBlock(trackId, targetBlockId);
+    if (targetBlockId) setScrollTargetArtist(targetBlockId);
   }
 
   function applyBlockOrder(newNormalBlockOrder) {
+    if (sortMode !== 'default') return;
     const reorderedTracks = newNormalBlockOrder.flatMap((b) => b.tracks);
     const misplacedTracks = misplacedBlocks.flatMap((b) => b.tracks);
     onReorderBlocks([...reorderedTracks, ...misplacedTracks]);
@@ -124,11 +136,19 @@ function PlaylistView({
   }
 
   function handleReorderTracksWithinBlock(activeTrackId, overTrackId) {
+    if (sortMode !== 'default') return;
     if (activeTrackId === overTrackId) return;
     const activeIndex = tracks.findIndex((t) => t.trackId === activeTrackId);
     const overIndex = tracks.findIndex((t) => t.trackId === overTrackId);
     if (activeIndex === -1 || overIndex === -1) return;
-    if (tracks[activeIndex].artistName !== tracks[overIndex].artistName) return;
+    if (
+      !rawBlocks.some(
+        (b) =>
+          b.tracks.some((t) => t.trackId === activeTrackId) &&
+          b.tracks.some((t) => t.trackId === overTrackId)
+      )
+    )
+      return;
     onReorderBlocks(arrayMove(tracks, activeIndex, overIndex));
   }
 
@@ -137,12 +157,18 @@ function PlaylistView({
     if (!over) return;
 
     if (String(over.id).startsWith('drop-')) {
-      handleMergeTrack(active.id);
+      const target = normalBlocks.find((b) => `drop-${b.blockId}` === over.id);
+      const source = misplacedBlocks
+        .flatMap((b) => b.tracks)
+        .find((t) => t.trackId === active.id);
+      if (target && source && target.artistName === source.artistName)
+        handleMergeTrack(active.id, target.blockId);
       return;
     }
 
     const isBlockDrag =
-      String(active.id).startsWith('block-') && String(over.id).startsWith('block-');
+      String(active.id).startsWith('block-') &&
+      String(over.id).startsWith('block-');
     if (isBlockDrag && active.id !== over.id) {
       const oldIndex = normalBlocks.findIndex((b) => b.blockId === active.id);
       const newIndex = normalBlocks.findIndex((b) => b.blockId === over.id);
@@ -156,17 +182,27 @@ function PlaylistView({
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
+      {sortMode !== 'default' && (
+        <p role="status">순서를 편집하려면 기본순으로 전환하세요.</p>
+      )}
       {misplacedBlocks.length > 0 && (
         <ul className="misplaced-tray">
-          {misplacedBlocks.map((block) => (
-            <MisplacedTrackCard
-              key={block.blockId}
-              track={block.tracks[0]}
-              onMoveToMain={() => handleMergeTrack(block.tracks[0].trackId)}
-              isOfflineMode={isOfflineMode}
-              isDownloaded={isDownloaded}
-            />
-          ))}
+          {misplacedBlocks.flatMap((block) =>
+            block.tracks.map((track) => (
+              <MisplacedTrackCard
+                key={track.trackId}
+                track={track}
+                targetBlocks={block.targetBlocks}
+                onMoveToMain={(targetId) =>
+                  handleMergeTrack(track.trackId, targetId)
+                }
+                isSelected={selectedIds?.has(track.trackId)}
+                onToggleSelect={onToggleSelect}
+                isOfflineMode={isOfflineMode}
+                isDownloaded={isDownloaded}
+              />
+            ))
+          )}
         </ul>
       )}
 
@@ -179,13 +215,16 @@ function PlaylistView({
             <ArtistBlock
               key={block.blockId}
               block={block}
+              canReorder={sortMode === 'default'}
               isDropTarget={block.isDropTarget}
-              isHighlighted={block.artistName === highlightArtist}
+              isHighlighted={block.blockId === highlightArtist}
               registerRef={registerBlockRef}
               onMoveUp={() => handleMoveBlock(block.blockId, 'up')}
               onMoveDown={() => handleMoveBlock(block.blockId, 'down')}
-              isFirst={index === 0}
-              isLast={index === normalBlocks.length - 1}
+              isFirst={sortMode !== 'default' || index === 0}
+              isLast={
+                sortMode !== 'default' || index === normalBlocks.length - 1
+              }
               selectedIds={selectedIds}
               onToggleSelect={onToggleSelect}
               isOfflineMode={isOfflineMode}

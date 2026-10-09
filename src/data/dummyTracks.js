@@ -1,3 +1,5 @@
+import { getPlaceholderAlbumArt } from '../utils/placeholderAlbumArt';
+
 // src/data/dummyTracks.js
 //
 // 실제 사용자의 멜론 플레이리스트("국내밴드", 224곡)에서 곡명/아티스트/앨범 정보만
@@ -1821,5 +1823,5 @@ const TRACKS = [
  *   원본을 그대로 공유하면 여러 컴포넌트/재마운트 사이에서 의도치 않게 원본이 오염될 수 있음.
  */
 export function getDummyTracks() {
-  return TRACKS.map((track) => ({ ...track }));
+  return TRACKS.map((track) => ({ ...track, albumArt: getPlaceholderAlbumArt(track.artistName) }));
 }

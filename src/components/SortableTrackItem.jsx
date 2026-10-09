@@ -3,9 +3,23 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import TrackItem from './TrackItem';
 
-function SortableTrackItem({ track, isSelected, onToggleSelect, isOfflineUnavailable }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+function SortableTrackItem({
+  track,
+  isSelected,
+  onToggleSelect,
+  isOfflineUnavailable,
+  canReorder = true,
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: track.trackId,
+    disabled: !canReorder,
   });
 
   const style = {
@@ -19,7 +33,7 @@ function SortableTrackItem({ track, isSelected, onToggleSelect, isOfflineUnavail
       track={track}
       innerRef={setNodeRef}
       style={style}
-      dragHandleProps={{ ...attributes, ...listeners }}
+      dragHandleProps={canReorder ? { ...attributes, ...listeners } : undefined}
       isSelected={isSelected}
       onToggleSelect={onToggleSelect}
       isOfflineUnavailable={isOfflineUnavailable}

@@ -7,16 +7,28 @@ export function usePlaylist() {
   const [tracks, setTracks] = useState(() => getDummyTracks());
 
   function addTrack(newTrack) {
-    setTracks((prevTracks) => [...prevTracks, newTrack]);
+    setTracks((prevTracks) =>
+      prevTracks.some((t) => t.trackId === newTrack.trackId)
+        ? prevTracks
+        : [...prevTracks, { ...newTrack, pendingPlacement: true }]
+    );
   }
 
-  function insertIntoArtistBlock(trackId) {
-    setTracks((prevTracks) => computeInsertIntoArtistBlock(prevTracks, trackId));
+  function insertIntoArtistBlock(trackId, targetBlockId) {
+    setTracks((prevTracks) =>
+      computeInsertIntoArtistBlock(prevTracks, trackId, targetBlockId)
+    );
   }
 
   function reorderByBlocks(newTracks) {
     setTracks((prevTracks) => {
-      if (newTracks.length !== prevTracks.length) return prevTracks;
+      const ids = new Set(newTracks.map((t) => t.trackId));
+      if (
+        newTracks.length !== prevTracks.length ||
+        ids.size !== prevTracks.length ||
+        !prevTracks.every((t) => ids.has(t.trackId))
+      )
+        return prevTracks;
       return newTracks;
     });
   }
@@ -27,8 +39,16 @@ export function usePlaylist() {
    */
   function deleteTracks(trackIds) {
     const idsToDelete = trackIds instanceof Set ? trackIds : new Set(trackIds);
-    setTracks((prevTracks) => prevTracks.filter((t) => !idsToDelete.has(t.trackId)));
+    setTracks((prevTracks) =>
+      prevTracks.filter((t) => !idsToDelete.has(t.trackId))
+    );
   }
 
-  return { tracks, addTrack, insertIntoArtistBlock, reorderByBlocks, deleteTracks };
+  return {
+    tracks,
+    addTrack,
+    insertIntoArtistBlock,
+    reorderByBlocks,
+    deleteTracks,
+  };
 }

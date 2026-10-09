@@ -25,7 +25,8 @@
     var(--melon-bg-bottom) 60%
   );
   color: var(--melon-white);
-  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic',
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic",
     sans-serif;
   position: relative;
 }
@@ -135,7 +136,7 @@
 
 .app-shell__count-checkbox--real:checked::after,
 .track-item__checkbox--real:checked::after {
-  content: '✓';
+  content: "✓";
   position: absolute;
   inset: 0;
   display: flex;
@@ -169,7 +170,7 @@
 }
 
 .app-shell__offline-toggle::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 2px;
   left: 2px;
@@ -824,4 +825,22 @@
     opacity: 1;
     transform: translate(-50%, 0);
   }
+}
+/* 곡 정보와 목적지 입력을 분리해 좁은 화면에서도 곡명이 보이게 한다. */
+.misplaced-card__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.misplaced-card__drag-handle {
+  grid-column: 1 / -1;
+  cursor: default;
+}
+.misplaced-card__row select {
+  width: 100%;
+  min-width: 0;
+  color: inherit;
+  background: #242424;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 8px;
 }

@@ -6,6 +6,7 @@
 
 function TrackItem({
   track,
+  as: Element = 'li',
   innerRef,
   style,
   dragHandleProps,
@@ -16,7 +17,7 @@ function TrackItem({
   const isSelectable = typeof onToggleSelect === 'function';
 
   return (
-    <li
+    <Element
       ref={innerRef}
       style={style}
       className={`track-item${isOfflineUnavailable ? ' track-item--offline-unavailable' : ''}`}
@@ -56,7 +57,7 @@ function TrackItem({
       >
         ≡
       </span>
-    </li>
+    </Element>
   );
 }
 
